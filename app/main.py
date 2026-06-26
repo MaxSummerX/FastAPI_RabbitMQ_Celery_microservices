@@ -10,7 +10,7 @@ from app.infrastructure.cache.redis.factories import create_cache
 from app.infrastructure.database.dependencies import get_db
 from app.infrastructure.logging import setup_logging
 from app.infrastructure.message_brokers.rabbit.factories import create_publisher
-from app.presentation.routers import auth, demo, users
+from app.presentation.routers import auth, demo, mailing, users
 
 
 setup_logging()
@@ -47,6 +47,7 @@ app = FastAPI(title="User-service", version="0.1.0", lifespan=lifespan)
 
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(mailing.router, prefix="/api/v1")
 
 # Демо-роутер для демонстрации
 app.include_router(demo.router, prefix="/api/v1")
