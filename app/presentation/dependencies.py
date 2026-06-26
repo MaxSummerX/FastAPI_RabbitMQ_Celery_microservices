@@ -9,13 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.application.services.user_service import UserService
 from app.config import settings
 from app.domain.entities.user import User
-from app.domain.repositories.users import IUserRepository
+from app.domain.repositories.users import IUserRepositoryAsync
 from app.infrastructure.auth.jwt import decode_token
 from app.infrastructure.cache.protocol.cache import ICache
 from app.infrastructure.database.dependencies import get_db
 from app.infrastructure.message_brokers.protocols.publisher import IEventPublisher
 from app.infrastructure.persistence.cached_user_repository import CachedUserRepository
-from app.infrastructure.persistence.sqlalchemy.user_repository import UserSQLAlchemyRepository
+from app.infrastructure.persistence.sqlalchemy.user_repository import UserSQLAlchemyRepositoryAsync
 
 
 bearer_scheme = HTTPBearer()
@@ -31,13 +31,13 @@ def get_event_publisher(request: Request) -> IEventPublisher:
     return cast(IEventPublisher, request.app.state.publisher)
 
 
-def get_user_repo(db: AsyncSession = Depends(get_db), cache: ICache = Depends(get_cache)) -> IUserRepository:
+def get_user_repo(db: AsyncSession = Depends(get_db), cache: ICache = Depends(get_cache)) -> IUserRepositoryAsync:
     """Своп: отдаём кэширующий декоратор вместо голого SQL-репозитория."""
-    return CachedUserRepository(UserSQLAlchemyRepository(db), cache, ttl=settings.REDIS_TTL)
+    return CachedUserRepository(UserSQLAlchemyRepositoryAsync(db), cache, ttl=settings.REDIS_TTL)
 
 
 def get_user_service(
-    repo: IUserRepository = Depends(get_user_repo), publisher: IEventPublisher = Depends(get_event_publisher)
+    repo: IUserRepositoryAsync = Depends(get_user_repo), publisher: IEventPublisher = Depends(get_event_publisher)
 ) -> UserService:
     """Возвращает сервис пользователей."""
     return UserService(user_repo=repo, event_publisher=publisher)
@@ -45,7 +45,7 @@ def get_user_service(
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-    user_repo: IUserRepository = Depends(get_user_repo),
+    user_repo: IUserRepositoryAsync = Depends(get_user_repo),
 ) -> User:
     """
     Аутентифицирует пользователя и возвращает его.

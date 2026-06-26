@@ -3,12 +3,12 @@ from uuid import UUID
 from app.application.exception import UserNotFoundException
 from app.domain.entities.user import User
 from app.domain.events.users import UserLoggedInEvent
-from app.domain.repositories.users import IUserRepository
+from app.domain.repositories.users import IUserRepositoryAsync
 from app.infrastructure.message_brokers.protocols.publisher import IEventPublisher
 
 
 class UserService:
-    def __init__(self, user_repo: IUserRepository, event_publisher: IEventPublisher) -> None:
+    def __init__(self, user_repo: IUserRepositoryAsync, event_publisher: IEventPublisher) -> None:
         self.user_repo = user_repo
         self.event_publisher = event_publisher
 
