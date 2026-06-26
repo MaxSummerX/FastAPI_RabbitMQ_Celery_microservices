@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str = Field(..., description="Строка подключения к БД(postgresql/mysql/sqlite)")
 
     SYNC_DATABASE_URL: str = Field(..., description="Строка подключения к синхронной БД(postgresql)")
+    CELERY_BROKER_URL: str = Field(..., description="URL брокера задач Celery")
+    CELERY_BACKEND_URL: str = Field(..., description="URL для хранения результатов задач Celery")
+
+    TIMEZONE: str = Field(default="UTC", description="Часовой пояс")
 
     SECRET_KEY: SecretStr = Field(..., description="Секретный ключ для JWT токенов")
     ALGORITHM: str = Field(default="HS256", description="Алгоритм шифрования JWT")
