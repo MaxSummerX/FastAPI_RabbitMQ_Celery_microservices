@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from uuid import UUID
 
 from app.domain.entities.user import User
 
 
-class IUserRepository(ABC):
+class IUserRepositoryAsync(ABC):
     """
     Интерфейс репозитория для работы с пользователями.
     """
@@ -82,5 +83,21 @@ class IUserRepository(ABC):
 
         Returns:
             Объект User или None, если пользователь не найден
+        """
+        pass
+
+
+class IUserRepositorySync(ABC):
+    """
+    Интерфейс синхронного репозитория пользователей.
+    """
+
+    @abstractmethod
+    def get_all(self) -> Sequence[User]:
+        """
+        Получить всех пользователей.
+
+        Returns:
+            Список объектов User
         """
         pass

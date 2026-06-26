@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = Field(..., description="Строка подключения к БД(postgresql/mysql/sqlite)")
 
+    SYNC_DATABASE_URL: str = Field(..., description="Строка подключения к синхронной БД(postgresql)")
+
     SECRET_KEY: SecretStr = Field(..., description="Секретный ключ для JWT токенов")
     ALGORITHM: str = Field(default="HS256", description="Алгоритм шифрования JWT")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, description="Время жизни access токена в минутах")

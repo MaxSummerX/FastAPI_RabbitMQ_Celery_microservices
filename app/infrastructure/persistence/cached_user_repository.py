@@ -5,22 +5,22 @@ from uuid import UUID
 import orjson
 
 from app.domain.entities.user import User
-from app.domain.repositories.users import IUserRepository
+from app.domain.repositories.users import IUserRepositoryAsync
 from app.infrastructure.cache.protocol.cache import ICache
 
 
 logger = logging.getLogger(__name__)
 
 
-class CachedUserRepository(IUserRepository):
+class CachedUserRepository(IUserRepositoryAsync):
     """
-    Декоратор над IUserRepository.
+    Декоратор над IUserRepositoryAsync.
 
     Cache-aside: чтение идёт через кэш (промах - запрос в БД с заполнением кэша),
     запись (save/delete) инвалидирует все ключи пользователя. Прозрачен для сервиса.
     """
 
-    def __init__(self, repo: IUserRepository, cache: ICache, ttl: int = 3600) -> None:
+    def __init__(self, repo: IUserRepositoryAsync, cache: ICache, ttl: int = 3600) -> None:
         """
         Инициализирует декоратор.
 
