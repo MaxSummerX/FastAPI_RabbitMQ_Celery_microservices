@@ -86,6 +86,16 @@ class IUserRepositoryAsync(ABC):
         """
         pass
 
+    @abstractmethod
+    async def add_many_users(self, users: Sequence[User]) -> None:
+        """
+        Добавить несколько пользователей.
+
+        Args:
+            users: Список объектов User
+        """
+        pass
+
 
 class IUserRepositorySync(ABC):
     """

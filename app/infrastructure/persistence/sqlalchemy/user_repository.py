@@ -114,6 +114,16 @@ class UserSQLAlchemyRepositoryAsync(IUserRepositoryAsync):
 
         return None
 
+    async def add_many_users(self, users: Sequence[User]) -> None:
+        """
+        Демонстрационный метод для добавления нескольких пользователей в базу данных.
+
+        Args:
+            users: Список объектов User
+        """
+        self.db.add_all(UserMapper.to_model(user) for user in users)
+        await self.db.commit()
+
 
 class UserSQLAlchemyRepositorySync(IUserRepositorySync):
     """

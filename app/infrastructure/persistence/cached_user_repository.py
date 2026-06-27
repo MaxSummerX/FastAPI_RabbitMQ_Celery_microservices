@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Sequence
 from dataclasses import asdict
 from uuid import UUID
 
@@ -152,6 +153,15 @@ class CachedUserRepository(IUserRepositoryAsync):
             await self.cache.set(key, self._serialize(result), ttl=self.ttl)
 
         return result
+
+    async def add_many_users(self, users: Sequence[User]) -> None:
+        """
+        Добавить несколько пользователей (делегирует оборачиваемому репозиторию).
+
+        Args:
+            users: Список объектов User
+        """
+        await self.repo.add_many_users(users)
 
     def _deserialize(self, raw: str) -> User:
         """Десериализует строку в объект User."""

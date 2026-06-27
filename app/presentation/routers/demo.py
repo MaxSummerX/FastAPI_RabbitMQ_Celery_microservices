@@ -1,14 +1,12 @@
-"""Demo-эндпоинт для тестирования consumer-group."""
+"""Demo-эндпоинт для создания пользователей в базе данных для тестирования рассылки"""
 
-import asyncio
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Query
 
-from app.domain.events.base import BaseEvent
-from app.domain.events.users import UserCreatedEvent
-from app.infrastructure.message_brokers.protocols.publisher import IEventPublisher
-from app.presentation.dependencies import get_event_publisher
+from app.domain.entities.user import User
+from app.domain.repositories.users import IUserRepositoryAsync
+from app.presentation.dependencies import get_user_repo
 
 
 router = APIRouter(prefix="/demo", tags=["Demo"])
@@ -16,31 +14,21 @@ router = APIRouter(prefix="/demo", tags=["Demo"])
 
 @router.post("/created")
 async def demo_created(
-    users: int = Query(default=10, ge=1, le=100_000),
-    publisher: IEventPublisher = Depends(get_event_publisher),
+    count: int = Query(default=10, ge=1, le=50),
+    user_repo: IUserRepositoryAsync = Depends(get_user_repo),
 ) -> dict[str, str]:
-    """Создает пользователей и публикует события в брокере."""
-    semaphore = asyncio.Semaphore(50)
-
-    async def publish_with_semaphore(event: BaseEvent) -> None:
-        async with semaphore:
-            await publisher.publish(event)
-
-    events = [
-        UserCreatedEvent(
-            user_id=uuid4(),
+    """Создает пользователей в базе данных для тестирования рассылки"""
+    users = [
+        User.create_from_oauth(
             email=f"test_{uuid4()}@example.com",
             firstname=f"First_name_{i}",
             lastname=f"Last_name_{i}",
+            oauth_provider="test",
+            oauth_id=str(uuid4()),
         )
-        for i in range(users)
+        for i in range(count)
     ]
 
-    results = await asyncio.gather(
-        *(publish_with_semaphore(event) for event in events),
-        return_exceptions=True,
-    )
+    await user_repo.add_many_users(users)
 
-    failed = sum(1 for res in results if isinstance(res, Exception))
-
-    return {"message": f"Создано {users - failed} пользователей, c ошибками: {failed}"}
+    return {"message": f"Создано {count} пользователей"}
