@@ -14,3 +14,12 @@ def send_emails(subject: str, body: str) -> None:
 
     with mailing_service_factory() as mail_service:
         mail_service.bulk_send_emails(subject, body)
+
+
+@app.task
+def daily_email_sender() -> None:
+    """
+    Задача Celery для ежедневной рассылки email всем пользователям.
+    """
+    with mailing_service_factory() as mail_service:
+        mail_service.bulk_send_emails("Ежедневная рассылка", "Новости дня")
