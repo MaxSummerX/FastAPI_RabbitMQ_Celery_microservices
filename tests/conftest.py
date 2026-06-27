@@ -15,13 +15,13 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from app.application.services.user_service import UserService
 from app.config import Settings
 from app.domain.entities.user import User
-from app.domain.repositories.users import IUserRepository
+from app.domain.repositories.users import IUserRepositoryAsync
 from app.infrastructure.cache.protocol.cache import ICache
 from app.infrastructure.database.dependencies import get_db
 from app.infrastructure.message_brokers.protocols.publisher import IEventPublisher
 from app.infrastructure.persistence.models import User as UserModel
 from app.infrastructure.persistence.models.base_model import Base
-from app.infrastructure.persistence.sqlalchemy.user_repository import UserSQLAlchemyRepository
+from app.infrastructure.persistence.sqlalchemy.user_repository import UserSQLAlchemyRepositoryAsync
 from app.main import app
 from app.presentation.dependencies import get_cache, get_event_publisher
 
@@ -60,7 +60,7 @@ def example_user(faker: Faker) -> User:
 
 @pytest.fixture
 def mock_user_repo() -> AsyncMock:
-    repo = AsyncMock(spec=IUserRepository)
+    repo = AsyncMock(spec=IUserRepositoryAsync)
     return repo
 
 
@@ -71,7 +71,7 @@ def mock_event_publisher() -> AsyncMock:
 
 
 @pytest.fixture
-def user_service(mock_user_repo: IUserRepository, mock_event_publisher: IEventPublisher) -> UserService:
+def user_service(mock_user_repo: IUserRepositoryAsync, mock_event_publisher: IEventPublisher) -> UserService:
     return UserService(mock_user_repo, mock_event_publisher)
 
 
@@ -79,6 +79,9 @@ def user_service(mock_user_repo: IUserRepository, mock_event_publisher: IEventPu
 def test_settings() -> Settings:
     return Settings(
         DATABASE_URL="sqlite+aiosqlite:///./test.db",
+        SYNC_DATABASE_URL="sqlite:///./sync_test.db",
+        CELERY_BROKER_URL="memory://",
+        CELERY_BACKEND_URL="cache+memory://",
         SECRET_KEY=SecretStr("test-secret-key-that-is-at-least-32-bytes-long!"),
         ALGORITHM="HS256",
         ACCESS_TOKEN_EXPIRE_MINUTES=30,
@@ -153,7 +156,7 @@ async def db_user(test_db_session: AsyncSession, faker: Faker) -> User:
         oauth_provider="google",
         oauth_id=faker.numerify("#" * 21),
     )
-    repo = UserSQLAlchemyRepository(test_db_session)
+    repo = UserSQLAlchemyRepositoryAsync(test_db_session)
     await repo.create(user)
     return user
 
@@ -167,7 +170,7 @@ async def other_db_user(test_db_session: AsyncSession, faker: Faker) -> User:
         oauth_provider="google",
         oauth_id=faker.numerify("#" * 21),
     )
-    repo = UserSQLAlchemyRepository(test_db_session)
+    repo = UserSQLAlchemyRepositoryAsync(test_db_session)
     await repo.create(user)
     return user
 
