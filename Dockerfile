@@ -14,6 +14,7 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
 
 RUN useradd --create-home appuser
+RUN mkdir /celerybeat && chown -R appuser /celerybeat
 COPY --from=builder /app/.venv /app/.venv
 
 COPY app/ app/
